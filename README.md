@@ -25,3 +25,8 @@
 |-----------|--------|
 | Python | `3.10+` |
 | ОС | Windows (нужен WinAPI для раскладки) |
+
+### Зависимости
+
+```bash
+pip install -r requirements.txt
