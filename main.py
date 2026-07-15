@@ -33,8 +33,10 @@ pyautogui.FAILSAFE = True
 # Карты ответов — неизменяемые словари для быстрого поиска O(1)
 DEFAULT_ANSWERS: Dict[str, int] = {
     "да": 2,
+    "Да": 2,
     "первое": 2,
     "нет": 3,
+    "Нет": 3,
     "второе": 3,
     "нельзя выбрать лучший": 4,
     "полностью одинаковые товары или с небольшими отличиями": 4,
@@ -129,6 +131,9 @@ def is_clothing_task() -> bool:
     """Текущее задание — матчинг одежды."""
     return "Матчинг. одежда и обувь" in state.task.text
 
+def is_narushenia_task() -> bool:
+    """Текущее задание — матчинг одежды."""
+    return "Проверь пост на наличие нарушений" in state.task.text
 
 def is_makeup_task() -> bool:
     """Текущее задание — оттенки косметики."""
@@ -188,6 +193,12 @@ def wait_for_new_text(area: Tuple[int, int], timeout: int = 60) -> bool:
             log(f"🎯 Найден ответ: {state.task.detected_answer}")
             return True
 
+        result2 = _detect_narushenia_answer(current)
+        if result2 is not None:
+            state.task.detected_answer = str(result2)
+            log(f"🎯 Найден ответ: {state.task.detected_answer}")
+            return True
+
         log(f"❓ Не удалось распознать ответ: {current}")
         time.sleep(0.5)
 
@@ -203,6 +214,13 @@ def _detect_makeup_answer(text: str) -> Optional[int]:
             return tabs
     return None
 
+def _detect_narushenia_answer(text: str) -> Optional[int]:
+    """Поиск ключа макияжа в тексте. None если не найдено."""
+    clean = text.strip()
+    for key, tabs in DEFAULT_ANSWERS.items():
+        if key in clean:
+            return tabs
+    return None
 
 # ── Обработчики заданий ───────────────────────────────────────────
 def handle_priority_flow() -> None:
@@ -263,6 +281,20 @@ def handle_clothing_task() -> None:
     if state.auto_submit:
         submit()
 
+def handle_narushenia_task() -> None:
+    raw_answers = pyperclip.paste()
+    log(f" Ответ: {raw_answers}")
+
+
+    check_stop()
+    target = DEFAULT_ANSWERS.get(raw_answers)
+    if target is None:
+        log(f"⚠️ Пропущен неизвестный ответ: {raw_answers}")
+    tap_tab(target)
+    tap_space()
+
+    if state.auto_submit:
+        submit()
 
 def handle_makeup_task() -> None:
     """Задание по макияжу: оттенок + коды."""
@@ -355,13 +387,17 @@ def switch_action() -> None:
     safe_click(CLICK_AREA_1)
     time.sleep(DELAY_SHORT)
 
+
     if is_clothing_task():
         handle_clothing_task()
+    elif is_narushenia_task():
+        handle_narushenia_task()
     elif is_makeup_task():
         handle_makeup_task()
     else:
         if state.auto_submit:
             submit()
+
 
 
 def clip_action() -> None:
