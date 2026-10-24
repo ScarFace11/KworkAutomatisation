@@ -1,4 +1,4 @@
-# 🤖 Kwark AutoBot
+# 🤖 Kwork AutoBot
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue?logo=python)](https://www.python.org/)
 [![Status](https://img.shields.io/badge/status-completed-brightgreen)]()
 [![License](https://img.shields.io/badge/license-MIT-yellow)]()
